@@ -1,0 +1,97 @@
+group 'com.chookie'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+//sourceCompatibility = 1.8
+//targetCompatibility = 1.8
+
+
+//repositories {
+//    mavenCentral()
+//}
+
+//subprojects {
+//    apply plugin: "idea"
+//    apply plugin: 'propdeps'
+//    apply plugin: 'propdeps-idea'
+//    afterevaluate {
+//        if (plugins.hasPlugin(JavaPlugin)){
+//            sourceCompatibility = 1.8
+//            targetCompatibility = 1.8
+//        }
+//    }
+//
+//}
+
+allprojects {
+    ext.versions = [
+        springBoot: '1.2.6.RELEASE'
+    ]
+    afterevaluate {
+        if (plugins.hasPlugin(JavaPlugin)){
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+        }
+    }
+}
+
+idea.module {
+    // Ensure this is in classpath in intellij but not run as part of standard gradle build
+    testSourceDirs += files('src/test/itegration')
+}
+
+configurations {
+    // http://docs.spring.io/spring-boot/docs/current/reference/html/howto-embedded-servlet-containers.html
+    compile.exclude module: 'spring-boot-start-tomcat'
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+
+    // Spring
+    compile "org.springframework.boot:spring-boot-starter-web:${versions.springBoot}"
+    compile "org.springframework.boot:spring-boot-starter-jetty:${versions.springBoot}"
+    compile "org.springframework.boot:spring-boot-starter-jersey:${versions.springBoot}"
+    compile "org.springframework.boot:spring-boot-starter-actuator:${versions.springBoot}"
+    compile "org.springframework.boot:spring-boot-starter-hateoas:${versions.springBoot}"
+    // http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor
+    optional "org.springframework.boot:spring-boot-configuration-processor"
+
+    // Rest Client
+    compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
+
+    // Swagger
+    compile "com.wordnik:swagger-jersey2-jaxrs_2.11:1.3.12"
+
+    // Hw
+    compile "com.h2database:h2:1.4.188"
+
+    // Spock
+    testRuntime "org.spockframework:spock-spring:1.0-groovy-2.4"
+    // Extra libraries for spock mocking
+    testRuntime "cglib:cglib:2.2"                   // For mocking classes
+    testRuntime "org.objenesis:objenesis:1.2"       // For mocking final classes
+}
+// Triggers spring-boot-configuration-processor
+compileJava.dependsOn(processResources)
+
+buildscript {
+    def areaRepo
+    areaRepo = {
+        mavenCentral()
+        maven {
+            // https://github.com/spring-projects/gradle-plugins/tree/master/propdeps-plugin
+            url 'http://repo.spring.io/plugins-release'
+        }
+    }
+    repositories areaRepo
+    project.allprojects {repositories areaRepo }
+    dependencies {
+        // Needed by spring-boot-configuration-processor
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
+
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.2.6.RELEASE'
+    }
+}
