@@ -2,17 +2,33 @@ group 'com.chookie'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'groovy'
-apply plugin: 'java'
 
 //sourceCompatibility = 1.8
 //targetCompatibility = 1.8
 
+sourceSets {
+    main {
+        // Don't use java compiler directly
+        java.srcDirs=[]
+        // But will be called by groovy anyway
+        groovy.srcDirs=['src/main/code']
+    }
+    test {
+        java.srcDirs=[]
+        groovy.srcDirs=['src/test/unit']
+    }
+    systemTest {
+        java.srcDirs=[]
+        groovy.srcDirs=['src/test/system']
+    }
+}
 
 //repositories {
 //    mavenCentral()
 //}
 
 //subprojects {
+// apply plugin: 'groovy'
 //    apply plugin: "idea"
 //    apply plugin: 'propdeps'
 //    apply plugin: 'propdeps-idea'
@@ -26,10 +42,16 @@ apply plugin: 'java'
 //}
 
 allprojects {
+    apply plugin: 'groovy'
+    apply plugin: 'idea'
+    // For property dependencies below
+    apply plugin: 'propdeps'
+    apply plugin: 'propdeps-idea'
+
     ext.versions = [
         springBoot: '1.2.6.RELEASE'
     ]
-    afterevaluate {
+    afterEvaluate {
         if (plugins.hasPlugin(JavaPlugin)){
             sourceCompatibility = 1.8
             targetCompatibility = 1.8
